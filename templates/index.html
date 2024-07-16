@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>File Transfer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+</head>
+<body>
+    <h1>File Transfer</h1>
+    <div>
+        <h2>Discovered Devices</h2>
+        <ul id="devices"></ul>
+    </div>
+    <form id="fileForm">
+        <label for="targetIp">Target IP:</label>
+        <input type="text" id="targetIp" name="targetIp">
+        <label for="file">Choose file:</label>
+        <input type="file" id="file" name="file">
+        <button type="submit">Send File</button>
+    </form>
+    <script>
+        const socket = io();
+
+        socket.on('scan_complete', function(data) {
+            const devicesList = document.getElementById('devices');
+            devicesList.innerHTML = '';
+            data.devices.forEach(function(device) {
+                const li = document.createElement('li');
+                li.textContent = `${device.name} (${device.ip})`;
+                devicesList.appendChild(li);
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            socket.emit('scan_network', { network: '192.168.0.0/24' });
+        });
+
+        document.getElementById('fileForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData();
+            formData.append('targetIp', document.getElementById('targetIp').value);
+            formData.append('file', document.getElementById('file').files[0]);
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            }).then(response => response.text())
+              .then(data => alert(data))
+              .catch(error => console.error(error));
+        });
+    </script>
+</body>
+</html>
