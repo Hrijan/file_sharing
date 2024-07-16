@@ -26,7 +26,7 @@ def handle_scan_network(data):
     network = data['network']
     threading.Thread(target=scanNetwork, args=(network,)).start()
     socketio.sleep(5)  # Give some time for scanning
-    emit('scan_complete', {'devices': discoveredDevices})
+    emit('scan_complete', {'devices': discoveredDevices}, broadcast=True)
 
 if __name__ == '__main__':
     threading.Thread(target=listenOnPort, daemon=True).start()
